@@ -4,9 +4,11 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 from typing import List
 from pydantic import BaseModel, HttpUrl
+import numpy as np
+import cv2
 
 from app.services.video_processing import extract_frames, extract_middle_frame, save_landmarks_visualization
-from app.services.face_detection import detect_face_landmarks
+from app.services.face_detection import detect_face_landmarks, determine_face_angle
 from app.utils.helpers import download_video_from_url
 
 router = APIRouter(
@@ -167,3 +169,58 @@ async def process_video_url_middle_frame(
         if 'temp_path' in locals():
             os.unlink(temp_path)
         raise HTTPException(status_code=500, detail=f"Error processing video: {str(e)}")
+
+@router.post("/attention")
+async def check_attention(
+    image_file: UploadFile = File(...),
+):
+    """
+    Check if the person in the image is looking at the screen or away
+    
+    Args:
+        image_file: Uploaded image file
+        
+    Returns:
+        JSON response with attention status and face angle
+    """
+    if not image_file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    try:
+        # Read the image file
+        contents = await image_file.read()
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if img is None:
+            raise HTTPException(status_code=400, detail="Invalid image")
+        
+        # Process the image with MediaPipe
+        landmarks_list = detect_face_landmarks(img)
+        if not landmarks_list:
+            raise HTTPException(status_code=400, detail="No face detected in the image")
+        
+        # Determine face attention
+        face_direction = determine_face_angle(landmarks_list[0])  # Process the first face
+        
+        # Classify attention
+        is_attentive = face_direction == "looking_at_screen"
+        
+        # Get nose coordinates
+        nose_landmark = None
+        for landmark in landmarks_list[0]:
+            if landmark["index"] == 1:
+                nose_landmark = landmark
+                break
+        
+        return JSONResponse(
+            content={
+                "message": "Image processed successfully",
+                "is_attentive": is_attentive,
+                "face_direction": face_direction,
+                "nose_position": nose_landmark if nose_landmark else None
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")

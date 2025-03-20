@@ -78,3 +78,44 @@ def visualize_landmarks(frame: np.ndarray, landmarks_list: List) -> np.ndarray:
             cv2.line(vis_frame, points[i], points[i + 1], (0, 255, 0), 1)
     
     return vis_frame
+
+def determine_face_angle(landmarks: List[Dict[str, Any]]) -> str:
+    """
+    Determine if the face is looking at the screen or away based on nose and cheek positions
+    
+    Args:
+        landmarks: List of face landmarks
+        
+    Returns:
+        String indicating face direction: "looking_at_screen", "looking_left", "looking_right"
+    """
+    # Find the required landmarks
+    nose_tip = None
+    right_cheek = None
+    left_cheek = None
+    
+    for landmark in landmarks:
+        if landmark["index"] == 1:
+            nose_tip = landmark
+        elif landmark["index"] == 234:
+            right_cheek = landmark
+        elif landmark["index"] == 454:
+            left_cheek = landmark
+    
+    # If we couldn't find all required landmarks
+    if not (nose_tip and right_cheek and left_cheek):
+        return "unknown"
+    
+    # Calculate distances from nose tip to cheeks (using x-coordinates)
+    distance_to_right = abs(nose_tip["x"] - right_cheek["x"])
+    distance_to_left = abs(nose_tip["x"] - left_cheek["x"])
+    
+    # Determine face direction
+    threshold = 0.05  # Threshold for considering the face looking straight
+    
+    if abs(distance_to_right - distance_to_left) < threshold:
+        return "looking_at_screen"
+    elif distance_to_right < distance_to_left:
+        return "looking_right"  # Nose is closer to right cheek
+    else:
+        return "looking_left"   # Nose is closer to left cheek
