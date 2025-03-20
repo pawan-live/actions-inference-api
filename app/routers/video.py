@@ -198,7 +198,15 @@ async def check_attention(
         # Process the image with MediaPipe
         landmarks_list = detect_face_landmarks(img)
         if not landmarks_list:
-            raise HTTPException(status_code=400, detail="No face detected in the image")
+            return JSONResponse(
+                content={
+                    "message": "No face detected in the image",
+                    "status": "no_face_found",
+                    "is_attentive": False,
+                    "face_direction": None,
+                    "nose_position": None
+                }
+            )
         
         # Determine face attention
         face_direction = determine_face_angle(landmarks_list[0])  # Process the first face
@@ -216,6 +224,7 @@ async def check_attention(
         return JSONResponse(
             content={
                 "message": "Image processed successfully",
+                "status": "face_found",
                 "is_attentive": is_attentive,
                 "face_direction": face_direction,
                 "nose_position": nose_landmark if nose_landmark else None
