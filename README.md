@@ -21,6 +21,7 @@ A FastAPI application that processes videos to detect and analyze facial express
 ## API Endpoints
 
 - `POST /api/video/process`: Upload a video file for face landmark detection
+- `POST /api/video/process-url`: Provide a video URL for face landmark detection
 
 ## Requirements
 

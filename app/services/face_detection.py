@@ -60,25 +60,21 @@ def visualize_landmarks(frame: np.ndarray, landmarks_list: List) -> np.ndarray:
     """
     vis_frame = frame.copy()
     
+    # Draw points for each landmark
     for face_landmarks in landmarks_list:
-        # Create a MediaPipe FaceLandmark object
-        mp_landmarks = mp_face_mesh.FaceLandmark()
+        # Convert landmarks to pixel coordinates
+        h, w, _ = vis_frame.shape
+        points = []
         for landmark in face_landmarks:
-            mp_landmarks.landmark.append(
-                mp.framework.formats.landmark_pb2.NormalizedLandmark(
-                    x=landmark["x"],
-                    y=landmark["y"],
-                    z=landmark["z"]
-                )
-            )
+            x = int(landmark["x"] * w)
+            y = int(landmark["y"] * h)
+            # Draw circle at each landmark point
+            cv2.circle(vis_frame, (x, y), 1, (0, 255, 0), -1)
+            points.append((x, y))
         
-        # Draw the landmarks
-        mp_drawing.draw_landmarks(
-            image=vis_frame,
-            landmark_list=mp_landmarks,
-            connections=mp_face_mesh.FACEMESH_TESSELATION,
-            landmark_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
-            connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=1)
-        )
+        # Draw connections between adjacent points to form a mesh (simplified)
+        # This is a basic visualization - you can make it more detailed if needed
+        for i in range(len(points) - 1):
+            cv2.line(vis_frame, points[i], points[i + 1], (0, 255, 0), 1)
     
     return vis_frame
