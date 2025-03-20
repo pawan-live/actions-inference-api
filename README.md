@@ -29,3 +29,28 @@ A FastAPI application that processes videos to detect and analyze facial express
 - OpenCV
 - MediaPipe
 - FastAPI
+
+## Running with Docker
+
+### Build and run using Docker
+
+1. Build the Docker image:
+
+   ```
+   docker build -t expression-prediction-api .
+   ```
+
+2. Run the container:
+   ```
+   docker run -p 8000:8000 expression-prediction-api
+   ```
+
+### Or using Docker Compose
+
+1. Build and run:
+
+   ```
+   docker-compose up
+   ```
+
+2. Access the API documentation at http://localhost:8000/docs
