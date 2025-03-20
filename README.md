@@ -16,7 +16,7 @@ A FastAPI application that processes videos to detect and analyze facial express
    uvicorn app.main:app --reload
    ```
 
-3. Access the API documentation at http://localhost:8000/docs
+3. Access the API documentation at http://localhost:8001/docs
 
 ## API Endpoints
 
@@ -42,7 +42,7 @@ A FastAPI application that processes videos to detect and analyze facial express
 
 2. Run the container:
    ```
-   docker run -p 8000:8000 expression-prediction-api
+   docker run -p 8001:8001 expression-prediction-api
    ```
 
 ### Or using Docker Compose
@@ -53,4 +53,4 @@ A FastAPI application that processes videos to detect and analyze facial express
    docker-compose up
    ```
 
-2. Access the API documentation at http://localhost:8000/docs
+2. Access the API documentation at http://localhost:8001/docs
